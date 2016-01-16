@@ -3,33 +3,34 @@ class Mission
 {
 	addOns[]=
 	{
+		"a3_map_altis",
 		"A3_Characters_F_BLUFOR",
-		"a3_characters_f",
-		"map_vr"
+		"a3_characters_f"
 	};
 	addOnsAuto[]=
 	{
 		"A3_Characters_F_BLUFOR",
 		"a3_characters_f",
-		"map_vr"
+		"a3_map_altis"
 	};
-	randomSeed=3708653;
+	randomSeed=14940326;
 	class Intel
 	{
 		timeOfChanges=1800.0002;
-		startWeather=0;
+		startWeather=0.30000001;
 		startWind=0.1;
 		startWaves=0.1;
-		forecastWeather=0;
+		forecastWeather=0.30000001;
 		forecastWind=0.1;
 		forecastWaves=0.1;
 		forecastLightnings=0.1;
 		year=2035;
-		day=28;
-		hour=13;
-		minute=37;
-		startFogDecay=0.0049999999;
-		forecastFogDecay=0.0049999999;
+		month=6;
+		day=24;
+		hour=12;
+		minute=0;
+		startFogDecay=0.013;
+		forecastFogDecay=0.013;
 	};
 	class Groups
 	{
@@ -42,7 +43,7 @@ class Mission
 				items=1;
 				class Item0
 				{
-					position[]={4000.0725,5,4000.6963};
+					position[]={10070.486,26.121122,11383.189};
 					id=0;
 					side="WEST";
 					vehicle="B_Soldier_F";
@@ -58,86 +59,89 @@ class Intro
 {
 	addOns[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
 	addOnsAuto[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
-	randomSeed=5424057;
+	randomSeed=6573529;
 	class Intel
 	{
 		timeOfChanges=1800.0002;
-		startWeather=0;
+		startWeather=0.30000001;
 		startWind=0.1;
 		startWaves=0.1;
-		forecastWeather=0;
+		forecastWeather=0.30000001;
 		forecastWind=0.1;
 		forecastWaves=0.1;
 		forecastLightnings=0.1;
 		year=2035;
-		day=28;
-		hour=13;
-		minute=37;
-		startFogDecay=0.0049999999;
-		forecastFogDecay=0.0049999999;
+		month=6;
+		day=24;
+		hour=12;
+		minute=0;
+		startFogDecay=0.013;
+		forecastFogDecay=0.013;
 	};
 };
 class OutroWin
 {
 	addOns[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
 	addOnsAuto[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
-	randomSeed=6045827;
+	randomSeed=10386553;
 	class Intel
 	{
 		timeOfChanges=1800.0002;
-		startWeather=0;
+		startWeather=0.30000001;
 		startWind=0.1;
 		startWaves=0.1;
-		forecastWeather=0;
+		forecastWeather=0.30000001;
 		forecastWind=0.1;
 		forecastWaves=0.1;
 		forecastLightnings=0.1;
 		year=2035;
-		day=28;
-		hour=13;
-		minute=37;
-		startFogDecay=0.0049999999;
-		forecastFogDecay=0.0049999999;
+		month=6;
+		day=24;
+		hour=12;
+		minute=0;
+		startFogDecay=0.013;
+		forecastFogDecay=0.013;
 	};
 };
 class OutroLoose
 {
 	addOns[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
 	addOnsAuto[]=
 	{
-		"map_vr"
+		"a3_map_altis"
 	};
-	randomSeed=10263259;
+	randomSeed=13558949;
 	class Intel
 	{
 		timeOfChanges=1800.0002;
-		startWeather=0;
+		startWeather=0.30000001;
 		startWind=0.1;
 		startWaves=0.1;
-		forecastWeather=0;
+		forecastWeather=0.30000001;
 		forecastWind=0.1;
 		forecastWaves=0.1;
 		forecastLightnings=0.1;
 		year=2035;
-		day=28;
-		hour=13;
-		minute=37;
-		startFogDecay=0.0049999999;
-		forecastFogDecay=0.0049999999;
+		month=6;
+		day=24;
+		hour=12;
+		minute=0;
+		startFogDecay=0.013;
+		forecastFogDecay=0.013;
 	};
 };
