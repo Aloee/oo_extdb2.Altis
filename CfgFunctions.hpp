@@ -3,7 +3,7 @@
 		class DatabaseClasses {
 			file = "Database\Classes";
 			
-			class classExtDb2 { preInit = 1; };
+			class classDatabaseExtDB2 { preInit = 1; };
 		};	
 	};
 			
