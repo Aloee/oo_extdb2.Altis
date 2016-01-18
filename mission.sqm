@@ -16,6 +16,7 @@ class Mission
 	randomSeed=14940326;
 	class Intel
 	{
+		briefingName="OO EXTDB2";
 		timeOfChanges=1800.0002;
 		startWeather=0.30000001;
 		startWind=0.1;
