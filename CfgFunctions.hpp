@@ -1,7 +1,7 @@
 	
 	class Armst {
 		class DatabaseClasses {
-			file = "Database\Classes";
+			file = "oo_extdb2\classes";
 			
 			class classExtDb2 { preInit = 1; };
 		};	
