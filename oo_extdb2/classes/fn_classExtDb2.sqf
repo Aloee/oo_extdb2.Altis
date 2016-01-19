@@ -1,29 +1,52 @@
 	/*
 	Authors: 
-		Aloe <itfruit@mail.ru>
-		Code34 <nicolas_boiteux@yahoo.fr>
-	Description: 
-		Class for connect to database, send requests, get responses
-	Parameters(s):
-		0: [DATABASE_NAME] <String>  Database name for connect.
-		1: [SQL_CUSTOM_* or SQL_RAW_*] <String> Default protocol (connection and protocol will be saved after changing mission)
-		2: [SQL_CUSTOM_FILENAME or ADD_QUOTES] <String> Protocol options: SQL_CUSTOM_FILENAME for SQL_CUSTOM_* protocols or ADD_QUOTES for SQL_RAW_* protocols. Etc.
-		3: (Optional) <Bool> Default: True. Lock 'extdb2' extension after connect. False if want to load another protocols (runtime).
+	Aloe <itfruit@mail.ru>
+	Code34 <nicolas_boiteux@yahoo.fr>
+	
+	Copyright (C) 2016 Aloe/Code34
 
+	CLASS OO_extDB2 -  Class for connect to extDB2, send requests, get responses
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+
+	0: [DATABASE_NAME] <String>  Database name for connect.
+	1: [SQL_CUSTOM_* or SQL_RAW_*] <String> Default protocol (connection and protocol will be saved after changing mission)
+	2: [SQL_CUSTOM_FILENAME or ADD_QUOTES] <String> Protocol options: SQL_CUSTOM_FILENAME for SQL_CUSTOM_* protocols or ADD_QUOTES for SQL_RAW_* protocols. Etc.
+	3: (Optional) <Bool> Default: True. Lock 'extdb2' extension after connect. False if want to load another protocols (runtime).
 	*/
 	
 	#include "oop.h"
 
 	CLASS("OO_extDB2")
 		
-		PRIVATE VARIABLE("scalar", "requiredVersion");
-		PRIVATE VARIABLE("string", "databaseVarName");
+		PRIVATE VARIABLE("scalar", "requiredDllVersion");
+		PRIVATE VARIABLE("string", "databaseName");
 		PRIVATE VARIABLE("string", "defaultProtocolID");
 		PRIVATE VARIABLE("array", "protoList");
+		PRIVATE VARIABLE("scalar", "version");
 
 		PUBLIC FUNCTION("array", "constructor") {
 			
-			private ["_version", "_reqVersion", "_database", "_protocol", "_protocolOptions", "_varNameDatabase"];
+			MEMBER("version", 0.1);
+			MEMBER("requiredDllVersion", 62);
+
+			private ["_database", "_protocol", "_protocolOptions", "_varNameDatabase"];
+
+			if!(MEMBER("checkExtDB2isLoaded", nil)) exitwith { MEMBER("sendError", "OO_extDB required extDB2 Dll"); };
+			if!(MEMBER("checkDllVersion", nil)) exitwith { MEMBER("sendLog", "Required extDB2 Dll version is " + (str MEMBER("requiredDllVersion", nil)) + " or higher."); };
+
+			// Too much things that made differents tasks :)
 			
 			_database =        [_this, 0, "", [""]] call BIS_fnc_param;
 			_protocol =        [_this, 1, "", [""]] call BIS_fnc_param;
@@ -31,39 +54,24 @@
 			_lock =            [_this, 3, true, [true]] call BIS_fnc_param;
 			
 			_varNameDatabase = format ["OO_EXTDB_%1", toUpper _database];
-			MEMBER("databaseVarName", _varNameDatabase);
-			MEMBER("requiredVersion", 62);
+			MEMBER("databaseName", _varNameDatabase);
 
 			if (isNil {uiNamespace getVariable _varNameDatabase}) then {
 				uiNamespace setVariable [_varNameDatabase, []];
 				
-				_version = MEMBER("getVersion", nil);
-				if(_version != "") then {
-				
-					MEMBER("sendLog", "Version: " + _version);
-					_reqVersion = MEMBER("requiredVersion", nil);
-					if (parseNumber _version < _reqVersion) then {
-						MEMBER("sendLog", "Recommended version is " + (str _reqVersion) + " or higher. Suddenly you're lucky?");
-					};
+				//Add Database
+				if(MEMBER("connectDatabase", _database)) then {
+					MEMBER("sendLog", "Connected to " + _database);
 					
-					//Add Database
-					if(MEMBER("addDatabase", _database)) then {
-						MEMBER("sendLog", "Connected to " + _database);
+					//Load protocol
+					private ["_protocolParams"];
+					_protocolParams = [_database, _protocol, str(round(random(999999))), _protocolOptions];
 						
-						//Load protocol
-						private ["_protocolParams"];
-						_protocolParams = [_database, _protocol, str(round(random(999999))), _protocolOptions];
-						
-						if(MEMBER("loadDatabaseProtocol", _protocolParams)) then {
-							
-							MEMBER("defaultProtocolID", _protocolParams select 2);
-							uiNamespace setVariable [_varNameDatabase, [["defaultProtocol", _protocolParams select 2]]];
-							
-							if(_lock) then { MEMBER("lock", nil) };							
-						};
+					if(MEMBER("loadDatabaseProtocol", _protocolParams)) then {				
+						MEMBER("defaultProtocolID", _protocolParams select 2);
+						uiNamespace setVariable [_varNameDatabase, [["defaultProtocol", _protocolParams select 2]]];
+						if(_lock) then { MEMBER("lock", nil) };							
 					};
-				}else{
-					MEMBER("sendError", "Failed to load - need extDb2");
 				};
 			}else{
 				private ["_savedProtocolDefault", "_savedProtocolList"];
@@ -73,14 +81,26 @@
 				
 				MEMBER("defaultProtocolID", _savedProtocolDefault);
 				MEMBER("protoList", _savedProtocolList);
-
 				MEMBER("sendLog", "Already connected");
 			};
 		};
-		
-		PUBLIC FUNCTION("", "deconstructor") {
-			//TODO: ? DATABASE DISCONNECT ?
-			DELETE_VARIABLE("defaultProtocolID");
+
+		PUBLIC FUNCTION("", checkDllVersion) {
+			private ["_return"];
+
+			_return = false;			
+
+			if((MEMBER("getDllVersion", nil) > MEMBER("requiredDllVersion", nil)) then {
+				return true;
+			};
+		};
+
+		PUBLIC FUNCTION("", checkExtDB2isLoaded) {
+			if((MEMBER("getDllVersion", nil) == 0) then { false; } else { true;};
+		};
+
+		PUBLIC FUNCTION("", "getVersion") {
+			 format["OO_extDB2: %1 Dll: %2", MEMBER("getDllVersion", nil), MEMBER("version", nil)];
 		};
 		
 		PUBLIC FUNCTION("string", "useDatabaseProtocol") {
@@ -211,7 +231,7 @@
 		_queryResult
 		};
 				
-		PRIVATE FUNCTION("string", "addDatabase") {
+		PRIVATE FUNCTION("string", "connectDatabase") {
 			private ["_return", "_result"];
 			
 			_result = call compile ("extDB2" callExtension format["9:ADD_DATABASE:%1", _this]);
@@ -226,10 +246,17 @@
 				};
 			}else{
 				MEMBER("sendError", "Unable to add database - extDB2 locked");
-			};
-			
+			};	
 		_return
 		};
+
+		PUBLIC FUNCTION("", disconnectDatabase) {
+
+		};
+
+		PUBLIC FUNCTION("", isconnectedDatabase) {
+
+		};		
 		
 		PRIVATE FUNCTION("string", "findDatabaseProtocol") {
 			private ["_return"];
@@ -259,12 +286,19 @@
 			MEMBER("protoList", _loadedProtocols);
 			
 			private ["_databaseVar"];
-			_databaseVar = uiNamespace getVariable (MEMBER("databaseVarName", nil));
+			_databaseVar = uiNamespace getVariable (MEMBER("databaseName", nil));
 			[_databaseVar, "protoList", _loadedProtocols] call BIS_fnc_setToPairs;
 		};
 				
-		PRIVATE FUNCTION("", "getVersion") {
-			"extDB2" callExtension "9:VERSION";
+		PRIVATE FUNCTION("", "getDllVersion") {
+			private ["_version"];
+			_version = "extDB2" callExtension "9:VERSION";
+			if(_version isequalto "") then {
+				_version = 0;
+			} else {
+				_version = parsenumber _version;
+			};
+			_version;
 		};
 				
 		PRIVATE FUNCTION("string", "sendLog") {
@@ -277,5 +311,13 @@
 			_error call BIS_fnc_error;
 			diag_log _error;
 		};
+
+		PUBLIC FUNCTION("", "deconstructor") {
+			//TODO: ? DATABASE DISCONNECT ?
+			DELETE_VARIABLE("defaultProtocolID");
+			DELETE_VARIABLE("requiredDllVersion");
+			DELETE_VARIABLE("databaseName");
+			DELETE_VARIABLE("protoList");
+		};		
 		
 	ENDCLASS;
