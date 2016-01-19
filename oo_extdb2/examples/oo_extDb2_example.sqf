@@ -2,7 +2,7 @@
 //---------------Connect examples:
 
 /* Example 1: Connect and load SQL_CUSTOM_V2 protocol as default (recommended) 
-	_databaseConn = ["new", ["MySQL_test_database_1", "SQL_CUSTOM_V2", "/"]] call OO_extDb2;
+	_databaseConn = ["new", ["MySQL_test_database_1", "SQL_CUSTOM_V2", "/"]] call OO_extDB2;
 */
 	
 /* Example 2: Connect and load SQL_CUSTOM_V2 protocol as default (no lock) */
@@ -11,10 +11,10 @@
 			"MySQL_test_database_1",	//Database name
 			"SQL_CUSTOM_V2",			//Default protocol (connect and protocol will be saved after changing mission)
 			"/",						//Protocol options: SQL custom filename or folder
-			false						//(Optional) Lock 'extdb2' extension after connect.
+			false						//(Optional) Lock 'extDB2' extension after connect.
 										//false if want to load runtime another protocols. Default: true
 		]
-	] call OO_extDb2;
+	] call OO_extDB2;
 
 
 /* Example 3: Connect and load SQL_RAW_v2 protocol as default (no lock)
@@ -23,10 +23,10 @@
 			"MySQL_test_database_1",	//Database name
 			"SQL_RAW_v2",				//Default protocol (connect and protocol will be saved after changing mission)
 			"ADD_QUOTES",				//Protocol options: 'ADD_QUOTES' OR ''
-			false						//(Optional) Lock 'extdb2' extension after connect.
+			false						//(Optional) Lock 'extDB2' extension after connect.
 										//false if want to load runtime another protocols. Default: true
 		]
-	] call OO_extDb2;
+	] call OO_extDB2;
  */
 	
 //---------------Load runtime protocol:	
