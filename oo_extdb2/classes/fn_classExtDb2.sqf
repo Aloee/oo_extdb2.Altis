@@ -85,18 +85,12 @@
 			};
 		};
 
-		PUBLIC FUNCTION("", checkDllVersion) {
-			private ["_return"];
-
-			_return = false;			
-
-			if((MEMBER("getDllVersion", nil) > MEMBER("requiredDllVersion", nil)) then {
-				return true;
-			};
+		PUBLIC FUNCTION("", "checkDllVersion") {
+			if(MEMBER("getDllVersion", nil) > MEMBER("requiredDllVersion", nil)) then { true;} else {false;};
 		};
 
-		PUBLIC FUNCTION("", checkExtDB2isLoaded) {
-			if((MEMBER("getDllVersion", nil) == 0) then { false; } else { true;};
+		PUBLIC FUNCTION("", "checkExtDB2isLoaded") {
+			if(MEMBER("getDllVersion", nil) == 0) then { false; } else { true;};
 		};
 
 		PUBLIC FUNCTION("", "getVersion") {
@@ -114,35 +108,21 @@
 				MEMBER("defaultProtocolID", _nowUsedId);
 				_return = true;
 			};
-		
-		_return
+			_return;
 		};
 		
 		PUBLIC FUNCTION("", "lock") {
-			private ["_return", "_result"];
+			private ["_result"];
 			
 			_result = call compile ("extDB2" callExtension "9:LOCK");
-			_return = false;
-			
-			if ((_result select 0) isEqualTo 1) then {
-				_return = true;
-				MEMBER("sendLog", "Locked");
-			};
-			
-		_return
+			if ((_result select 0) isEqualTo 1) then { MEMBER("sendLog", "Locked"); true; } else { false; };
 		};
 		
 		PUBLIC FUNCTION("", "locked") {
-			private ["_return", "_result"];
+			private ["_result"];
 			
-			_result = call compile ("extDB2" callExtension "9:LOCK_STATUS");
-			_return = false;
-			
-			if((_result select 0) isEqualTo 1) then {
-				_return = true;
-			};
-			
-		_return
+			_result = call compile ("extDB2" callExtension "9:LOCK_STATUS");		
+			if((_result select 0) isEqualTo 1) then { true; } else { false; };
 		};
 		
 		PUBLIC FUNCTION("array", "loadDatabaseProtocol") {
@@ -172,9 +152,8 @@
 				};
 			}else{
 				MEMBER("sendLog", "Protocol load canceled - name '" + _id + "' already taken");
-			};
-						
-		_return
+			};			
+			_return;
 		};
 				
 		PUBLIC FUNCTION("array", "sendRequest") {
@@ -227,8 +206,7 @@
 			if ((_queryResult select 0) isEqualTo 0) then {
 				MEMBER("sendError", (_queryResult select 1) + "-->" + _queryStmt);
 			};
-			
-		_queryResult
+			_queryResult;
 		};
 				
 		PRIVATE FUNCTION("string", "connectDatabase") {
@@ -247,14 +225,14 @@
 			}else{
 				MEMBER("sendError", "Unable to add database - extDB2 locked");
 			};	
-		_return
+			_return;
 		};
 
-		PUBLIC FUNCTION("", disconnectDatabase) {
+		PUBLIC FUNCTION("", "disconnectDatabase") {
 
 		};
 
-		PUBLIC FUNCTION("", isconnectedDatabase) {
+		PUBLIC FUNCTION("", "isconnectedDatabase") {
 
 		};		
 		
@@ -265,8 +243,7 @@
 			{
 				if((_x select 1) isEqualTo _this) exitWith {_return=_foreachIndex};
 			} foreach (MEMBER("protoList", nil));
-			
-		_return
+			_return;
 		};
 		
 		PRIVATE FUNCTION("array", "updateProtoList") {
