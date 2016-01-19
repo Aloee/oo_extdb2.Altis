@@ -1,5 +1,7 @@
 	/*
-	Author: Aloe <itfruit@mail.ru>
+	Authors: 
+		Aloe <itfruit@mail.ru>
+		Code34 <nicolas_boiteux@yahoo.fr>
 	Description: 
 		Class for connect to database, send requests, get responses
 	Parameters(s):
