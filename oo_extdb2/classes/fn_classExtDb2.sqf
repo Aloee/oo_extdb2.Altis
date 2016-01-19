@@ -12,7 +12,7 @@
 	
 	#include "oop.h"
 
-	CLASS("OO_extDb2")
+	CLASS("OO_extDB2")
 		
 		PRIVATE VARIABLE("scalar", "requiredVersion");
 		PRIVATE VARIABLE("string", "databaseVarName");
@@ -223,7 +223,7 @@
 					MEMBER("sendError", _result select 1);
 				};
 			}else{
-				MEMBER("sendError", "Unable to add database - extdb2 locked");
+				MEMBER("sendError", "Unable to add database - extDB2 locked");
 			};
 			
 		_return
