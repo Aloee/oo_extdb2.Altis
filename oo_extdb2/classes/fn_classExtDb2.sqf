@@ -37,7 +37,6 @@
 		PRIVATE STATIC_VARIABLE("array", "sessions");
 		PRIVATE VARIABLE("scalar", "version");
 
-
 		PUBLIC FUNCTION("array", "constructor") {
 			
 			MEMBER("version", 0.1);
@@ -76,7 +75,7 @@
 			_sessionid;
 		};
 
-		PUBLIC FUNCTION("string", "existSessionId") {
+		PUBLIC FUNCTION("string", "existsSessionId") {
 			if(_this in MEMBER("sessions", nil)) then { true; } else { false; };
 		};
 
@@ -234,8 +233,9 @@
 		};
 
 		PUBLIC FUNCTION("", "deconstructor") {
-			//TODO: ? DATABASE DISCONNECT ?
-			MEMBER("sessions", nil) = MEMBER("sessions", nil) - MEMBER("sessionid", nil);
+			private ["_temp"];
+			_temp = MEMBER("sessions", nil) - [MEMBER("sessionid", nil)];
+			MEMBER("sessions", _temp);
 			DELETE_VARIABLE("sessionid");
 			DELETE_VARIABLE("dllversionrequired");
 			DELETE_VARIABLE("databasename");
