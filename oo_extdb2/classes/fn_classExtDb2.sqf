@@ -30,63 +30,58 @@
 
 	CLASS("OO_extDB2")
 		
-		PRIVATE VARIABLE("scalar", "requiredDllVersion");
-		PRIVATE VARIABLE("string", "databaseName");
-		PRIVATE VARIABLE("string", "defaultProtocolID");
-		PRIVATE VARIABLE("array", "protoList");
+		PRIVATE VARIABLE("scalar", "dllversionrequired");
+		PRIVATE VARIABLE("string", "databasename");
+		PRIVATE VARIABLE("string", "protocol");
+		PRIVATE VARIABLE("string", "sessionid");
+		PRIVATE STATIC_VARIABLE("array", "sessions");
 		PRIVATE VARIABLE("scalar", "version");
+
 
 		PUBLIC FUNCTION("array", "constructor") {
 			
 			MEMBER("version", 0.1);
-			MEMBER("requiredDllVersion", 62);
+			MEMBER("dllversionrequired", 62);
 
-			private ["_database", "_protocol", "_protocolOptions", "_varNameDatabase"];
+			private ["_database", "_protocol", "_protocoloptions", "_varNameDatabase", "_sessionid", "_protocolparams"];
 
 			if!(MEMBER("checkExtDB2isLoaded", nil)) exitwith { MEMBER("sendError", "OO_extDB required extDB2 Dll"); };
-			if!(MEMBER("checkDllVersion", nil)) exitwith { MEMBER("sendLog", "Required extDB2 Dll version is " + (str MEMBER("requiredDllVersion", nil)) + " or higher."); };
-
-			// Too much things that made differents tasks :)
-			
+			if!(MEMBER("checkDllVersion", nil)) exitwith { MEMBER("sendLog", "Required extDB2 Dll version is " + (str MEMBER("dllversionrequired", nil)) + " or higher."); };
+			if(isnil MEMBER("sessions", nil)) then { _array = []; MEMBER("sessions", _array;);};
+		
 			_database =        [_this, 0, "", [""]] call BIS_fnc_param;
 			_protocol =        [_this, 1, "", [""]] call BIS_fnc_param;
-			_protocolOptions = [_this, 2, "", [""]] call BIS_fnc_param;
+			_protocoloptions = [_this, 2, "", [""]] call BIS_fnc_param;
 			_lock =            [_this, 3, true, [true]] call BIS_fnc_param;
 			
-			_varNameDatabase = format ["OO_EXTDB_%1", toUpper _database];
-			MEMBER("databaseName", _varNameDatabase);
+			MEMBER("databasename", _database);
+			_result = MEMBER("connectDatabase", _database);
 
-			if (isNil {uiNamespace getVariable _varNameDatabase}) then {
-				uiNamespace setVariable [_varNameDatabase, []];
-				
-				//Add Database
-				if(MEMBER("connectDatabase", _database)) then {
-					MEMBER("sendLog", "Connected to " + _database);
-					
-					//Load protocol
-					private ["_protocolParams"];
-					_protocolParams = [_database, _protocol, str(round(random(999999))), _protocolOptions];
-						
-					if(MEMBER("loadDatabaseProtocol", _protocolParams)) then {				
-						MEMBER("defaultProtocolID", _protocolParams select 2);
-						uiNamespace setVariable [_varNameDatabase, [["defaultProtocol", _protocolParams select 2]]];
-						if(_lock) then { MEMBER("lock", nil) };							
-					};
-				};
-			}else{
-				private ["_savedProtocolDefault", "_savedProtocolList"];
-				
-				_savedProtocolDefault = [uiNamespace getVariable _varNameDatabase, "defaultProtocol"] call BIS_fnc_getFromPairs;
-				_savedProtocolList = [uiNamespace getVariable _varNameDatabase, "protoList"] call BIS_fnc_getFromPairs;
-				
-				MEMBER("defaultProtocolID", _savedProtocolDefault);
-				MEMBER("protoList", _savedProtocolList);
-				MEMBER("sendLog", "Already connected");
+			_sessionid =  MEMBER("getSessionId", nil);
+			MEMBER("sessions", nil) pushBack _sessionid;
+			MEMBER("sessionid", _sessionid);
+			
+			_protocolparams = [_database, _protocol, _sessionid, _protocoloptions];
+			_result = MEMBER("loadDatabaseProtocol", _protocolparams);
+			if(_lock) then { MEMBER("lock", nil) };
+		};
+
+		PUBLIC FUNCTION("", "getSessionId") {
+			private ["_sessionid"];
+			_sessionid = str(round(random(999999)));
+			while { _sessionid in MEMBER("sessions", nil) } do {
+				_sessionid = str(round(random(999999)));
+				sleep 0.01;
 			};
+			_sessionid;
+		};
+
+		PUBLIC FUNCTION("string", "existSessionId") {
+			if(_this in MEMBER("sessions", nil)) then { true; } else { false; };
 		};
 
 		PUBLIC FUNCTION("", "checkDllVersion") {
-			if(MEMBER("getDllVersion", nil) > MEMBER("requiredDllVersion", nil)) then { true;} else {false;};
+			if(MEMBER("getDllVersion", nil) > MEMBER("dllversionrequired", nil)) then { true;} else {false;};
 		};
 
 		PUBLIC FUNCTION("", "checkExtDB2isLoaded") {
@@ -95,20 +90,6 @@
 
 		PUBLIC FUNCTION("", "getVersion") {
 			 format["OO_extDB2: %1 Dll: %2", MEMBER("getDllVersion", nil), MEMBER("version", nil)];
-		};
-		
-		PUBLIC FUNCTION("string", "useDatabaseProtocol") {
-			private ["_return", "_protoPairs", "_nowUsedId"];
-			
-			_return = false;
-			_protoPairs = MEMBER("protoList", nil);
-			
-			if([_protoPairs, _this] call BIS_fnc_findInPairs >= 0) then {
-				_nowUsedId = [_protoPairs, _this] call BIS_fnc_getFromPairs;
-				MEMBER("defaultProtocolID", _nowUsedId);
-				_return = true;
-			};
-			_return;
 		};
 		
 		PUBLIC FUNCTION("", "lock") {
@@ -127,32 +108,21 @@
 		
 		PUBLIC FUNCTION("array", "loadDatabaseProtocol") {
 			private ["_return", "_result"];
-			_this params [["_database", ""], ["_protocol", ""], ["_id", ""], ["_protocolOptions", ""]];
-			
-			_return = false;
-			
-			if(MEMBER("findDatabaseProtocol", _id) < 0) then {
-				
-				_result = call compile ("extDB2" callExtension format["9:ADD_DATABASE_PROTOCOL:%1:%2:%3:%4", 
-					_database,
-					_protocol,
-					_id,
-					_protocolOptions
-				]);
-				
-				if ((_result select 0) isEqualTo 1) then {
-					MEMBER("sendLog", "Protocol loaded - " + _protocol);
-					_return = true;
-					
-					private ["_protocolPair"];
-					_protocolPair = [_protocol, _id];
-					MEMBER("updateProtoList", _protocolPair);
-				}else{
-					MEMBER("sendError", _result select 1);
-				};
+	
+			_database = _this select 0;
+			_protocol = _this select 1;
+			_id = _this select 2;
+			_protocoloptions = _this select 3;		
+
+			_result = call compile ("extDB2" callExtension format["9:ADD_DATABASE_PROTOCOL:%1:%2:%3:%4", _database, _protocol, _id, _protocoloptions]);
+						
+			if ((_result select 0) isEqualTo 1) then {
+				MEMBER("sendLog", "Protocol loaded - " + _protocol);
+				_return = true;
 			}else{
-				MEMBER("sendLog", "Protocol load canceled - name '" + _id + "' already taken");
-			};			
+				MEMBER("sendError", _result select 1);
+				_return = false;
+			};		
 			_return;
 		};
 				
@@ -163,7 +133,7 @@
 			
 			if (_this params [["_mode", 0, [0]], ["_queryStmt", "", [""]]]) then {
 			
-				_key = call compile ("extDB2" callExtension format["%1:%2:%3",_mode, MEMBER("defaultProtocolID", nil), _queryStmt]);
+				_key = call compile ("extDB2" callExtension format["%1:%2:%3",_mode, MEMBER("sessionid", nil), _queryStmt]);
 
 				//0=Sync 1=ASync 2=ASync+Save
 				switch(_mode) do {
@@ -211,19 +181,24 @@
 				
 		PRIVATE FUNCTION("string", "connectDatabase") {
 			private ["_return", "_result"];
-			
+
+			_return = false;	
 			_result = call compile ("extDB2" callExtension format["9:ADD_DATABASE:%1", _this]);
-			_return = false;
 			
 			if !(isNil "_result") then {
 				if ((_result select 0) isEqualTo 1) then {
-					MEMBER("sendLog", "Database added: " + _this);
+					MEMBER("sendLog", "Connected to " + _this);
 					_return = true;
 				}else{
-					MEMBER("sendError", _result select 1);
+					if(tolower(_result select 1) isEqualTo "already connected to database") then {
+						MEMBER("sendLog", "Connected to " + _this);
+						_return = true;
+					} else {
+						MEMBER("sendError", _result select 1);
+					};
 				};
 			}else{
-				MEMBER("sendError", "Unable to add database - extDB2 locked");
+				MEMBER("sendError", "Unable to connect to database - extDB2 locked");
 			};	
 			_return;
 		};
@@ -235,37 +210,6 @@
 		PUBLIC FUNCTION("", "isconnectedDatabase") {
 
 		};		
-		
-		PRIVATE FUNCTION("string", "findDatabaseProtocol") {
-			private ["_return"];
-			
-			_return = -1;
-			{
-				if((_x select 1) isEqualTo _this) exitWith {_return=_foreachIndex};
-			} foreach (MEMBER("protoList", nil));
-			_return;
-		};
-		
-		PRIVATE FUNCTION("array", "updateProtoList") {
-			private ["_loadedProtocols"];
-			
-			_this params ["_protocol", "_protocolId"];
-			
-			if (isNil {MEMBER("protoList", nil)}) then {MEMBER("protoList", [])};
-			_loadedProtocols = MEMBER("protoList", nil);
-
-			if([_loadedProtocols, _protocol] call BIS_fnc_findInPairs < 0) then {
-				[_loadedProtocols, _protocol, _protocolId] call BIS_fnc_addToPairs;
-			}else{
-				[_loadedProtocols, _protocol, _protocolId] call BIS_fnc_setToPairs;
-			};
-			
-			MEMBER("protoList", _loadedProtocols);
-			
-			private ["_databaseVar"];
-			_databaseVar = uiNamespace getVariable (MEMBER("databaseName", nil));
-			[_databaseVar, "protoList", _loadedProtocols] call BIS_fnc_setToPairs;
-		};
 				
 		PRIVATE FUNCTION("", "getDllVersion") {
 			private ["_version"];
@@ -291,10 +235,10 @@
 
 		PUBLIC FUNCTION("", "deconstructor") {
 			//TODO: ? DATABASE DISCONNECT ?
-			DELETE_VARIABLE("defaultProtocolID");
-			DELETE_VARIABLE("requiredDllVersion");
-			DELETE_VARIABLE("databaseName");
-			DELETE_VARIABLE("protoList");
+			DELETE_VARIABLE("sessionid");
+			DELETE_VARIABLE("dllversionrequired");
+			DELETE_VARIABLE("databasename");
+			DELETE_VARIABLE("protolist");
 		};		
 		
 	ENDCLASS;
