@@ -54,7 +54,7 @@
 			_lock =            [_this, 3, true, [true]] call BIS_fnc_param;
 			
 			MEMBER("databasename", _database);
-			_result = MEMBER("connectDatabase", _database);
+			_result = MEMBER("connect", _database);
 
 			_sessionid =  MEMBER("getSessionId", nil);
 			MEMBER("sessions", nil) pushBack _sessionid;
@@ -178,7 +178,7 @@
 			_queryResult;
 		};
 				
-		PRIVATE FUNCTION("string", "connectDatabase") {
+		PRIVATE FUNCTION("string", "connect") {
 			private ["_return", "_result"];
 
 			_return = false;	
@@ -202,11 +202,11 @@
 			_return;
 		};
 
-		PUBLIC FUNCTION("", "disconnectDatabase") {
+		PUBLIC FUNCTION("", "disconnect") {
 
 		};
 
-		PUBLIC FUNCTION("", "isconnectedDatabase") {
+		PUBLIC FUNCTION("", "isconnected") {
 
 		};		
 				
