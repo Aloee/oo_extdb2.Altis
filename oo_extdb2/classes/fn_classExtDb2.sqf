@@ -62,7 +62,7 @@
 			MEMBER("sessionid", _sessionid);
 			
 			_protocolparams = [_database, _protocol, _sessionid, _protocoloptions];
-			_result = MEMBER("loadDatabaseProtocol", _protocolparams);
+			_result = MEMBER("setDatabaseProtocol", _protocolparams);
 			if(_lock) then { MEMBER("lock", nil) };
 		};
 
@@ -99,14 +99,14 @@
 			if ((_result select 0) isEqualTo 1) then { MEMBER("sendLog", "Locked"); true; } else { false; };
 		};
 		
-		PUBLIC FUNCTION("", "locked") {
+		PUBLIC FUNCTION("", "isLocked") {
 			private ["_result"];
 			
 			_result = call compile ("extDB2" callExtension "9:LOCK_STATUS");		
 			if((_result select 0) isEqualTo 1) then { true; } else { false; };
 		};
 		
-		PUBLIC FUNCTION("array", "loadDatabaseProtocol") {
+		PUBLIC FUNCTION("array", "setDatabaseProtocol") {
 			private ["_return", "_result"];
 	
 			_database = _this select 0;
@@ -235,6 +235,7 @@
 
 		PUBLIC FUNCTION("", "deconstructor") {
 			//TODO: ? DATABASE DISCONNECT ?
+			MEMBER("sessions", nil) = MEMBER("sessions", nil) - MEMBER("sessionid", nil);
 			DELETE_VARIABLE("sessionid");
 			DELETE_VARIABLE("dllversionrequired");
 			DELETE_VARIABLE("databasename");
